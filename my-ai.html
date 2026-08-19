@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --surface3: #222232;
+  --border: #1e1e2e;
+  --border2: #2a2a3e;
+  --text: #e2e2f0;
+  --text2: #7878a0;
+  --text3: #44445a;
+  --accent: #7c6cfc;
+  --accent2: #5b4de0;
+  --accent-glow: rgba(124,108,252,0.15);
+  --green: #22c55e;
+  --red: #ef4444;
+  --gemini: #4285f4;
+  --groq: #f55036;
+  --nvidia: #76b900;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* ── SETUP OVERLAY ── */
+#setup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+#setup-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.setup-logo {
+  text-align: center;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.setup-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.setup-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-top: -8px;
+}
+
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.setup-input {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.setup-input:focus { border-color: var(--accent); }
+.setup-input::placeholder { color: var(--text3); }
+
+#setup-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+
+#setup-btn:active { transform: scale(0.98); }
+#setup-btn:hover { background: var(--accent2); }
+
+.setup-skip {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.setup-skip:hover { color: var(--text2); }
+
+/* ── TOP BAR ── */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+#topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+#logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+#app-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+#provider-badge {
+  font-size: 10px;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+
+#topbar-right {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover { background: var(--border2); color: var(--text); }
+.icon-btn:active { transform: scale(0.93); }
+
+/* ── MAIN ── */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.panel.active { display: flex; }
+
+/* ── CHAT ── */
+#chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+
+#chat-messages::-webkit-scrollbar { width: 3px; }
+#chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Welcome */
+#welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.welcome-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.welcome-sub {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+/* Messages */
+.msg {
+  display: flex;
+  gap: 10px;
+  animation: msgIn 0.22s ease;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.msg.user .avatar {
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  color: white;
+}
+
+.msg.ai .avatar {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: 14px;
+}
+
+.msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: calc(100% - 44px);
+}
+
+.msg-meta {
+  font-size: 10px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: 2px;
+}
+
+.meta-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.msg.user .bubble {
+  background: var(--accent);
+  color: white;
+  border-radius: 14px 3px 14px 14px;
+}
+
+.msg.ai .bubble {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 3px 14px 14px 14px;
+}
+
+.msg.error .bubble {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #fca5a5;
+  border-radius: 14px;
+}
+
+.bubble pre {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 12px;
+  margin: 8px 0;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+.bubble code {
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.bubble strong { color: white; font-weight: 600; }
+
+/* Typing */
+.typing {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text3);
+  animation: typingBounce 1.3s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── INPUT ── */
+#input-bar {
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#input-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 9px 12px;
+  transition: border-color 0.2s;
+}
+
+#input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+#msg-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  max-height: 120px;
+  min-height: 22px;
+  line-height: 1.55;
+  padding: 2px 0;
+}
+
+#msg-input::placeholder { color: var(--text3); }
+
+#send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+#send-btn:hover { background: var(--accent2); }
+#send-btn:disabled { background: var(--surface3); box-shadow: none; cursor: not-allowed; }
+#send-btn:active:not(:disabled) { transform: scale(0.93); }
+
+/* ── MEMORY PANEL ── */
+#panel-memory {
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.small-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+
+.small-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.memory-add {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.memory-add textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  resize: none;
+  height: 58px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+
+.memory-add textarea:focus { border-color: var(--accent); }
+.memory-add textarea::placeholder { color: var(--text3); }
+
+.add-btn {
+  padding: 9px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-end;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+
+.add-btn:hover { background: var(--accent2); }
+
+#memory-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#memory-list::-webkit-scrollbar { width: 3px; }
+#memory-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.mem-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: msgIn 0.2s ease;
+}
+
+.mem-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mem-date { font-size: 10px; color: var(--text3); }
+
+.mem-del {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.mem-del:hover { color: var(--red); }
+
+.mem-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+#memory-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text3);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── SETTINGS PANEL ── */
+#panel-settings {
+  overflow-y: auto;
+}
+
+#panel-settings::-webkit-scrollbar { width: 3px; }
+#panel-settings::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.settings-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.section-title {
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.settings-row {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row:last-child { border-bottom: none; }
+
+.row-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.key-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.key-status.set { background: rgba(34,197,94,0.12); color: var(--green); }
+.key-status.unset { background: rgba(239,68,68,0.12); color: var(--red); }
+
+.row-desc {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.6;
+  margin-bottom: 9px;
+}
+
+.key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 0;
+}
+
+.key-input:focus { border-color: var(--accent); }
+.key-input::placeholder { color: var(--text3); font-size: 12px; }
+
+.save-btn {
+  padding: 9px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.save-btn:hover { background: var(--accent2); }
+
+.route-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.route-row:last-child { border-bottom: none; }
+
+.route-icon { font-size: 15px; flex-shrink: 0; }
+.route-task { color: var(--text2); flex: 1; }
+.route-model { font-weight: 600; font-size: 11px; }
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-btn.danger { color: var(--red); border-color: rgba(239,68,68,0.2); }
+.action-btn.danger:hover { background: rgba(239,68,68,0.08); border-color: var(--red); }
+
+/* ── BOTTOM NAV ── */
+#bottom-nav {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s;
+  letter-spacing: 0.2px;
+}
+
+.nav-btn.active { color: var(--accent); }
+.nav-btn:hover { color: var(--text2); }
+.nav-icon { font-size: 19px; line-height: 1; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.28s;
+  pointer-events: none;
+  z-index: 500;
+  white-space: nowrap;
+  max-width: 88vw;
+}
+
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div id="setup-box">
+    <div class="setup-logo">✦</div>
+    <div class="setup-title">Welcome to My AI</div>
+    <div class="setup-sub">Add your API keys to get started. All keys are stored only on this device.</div>
+
+    <div class="setup-field">
+      <div class="setup-label"><span class="dot" style="background:var(--gemini)"></span>Google AI Studio Key</div>
+      <input type="password" class="setup-input" id="s-gemini" placeholder="AIza...">
+    </div>
+
+    <div class="setup-field">
+      <div class="setup-label"><span class="dot" style="background:var(--groq)"></span>Groq Key</div>
+      <input type="password" class="setup-input" id="s-groq" placeholder="gsk_...">
+    </div>
+
+    <div class="setup-field">
+      <div class="setup-label"><span class="dot" style="background:var(--nvidia)"></span>NVIDIA Build Key</div>
+      <input type="password" class="setup-input" id="s-nvidia" placeholder="nvapi-...">
+    </div>
+
+    <button id="setup-btn">Start My AI →</button>
+    <div class="setup-skip" onclick="skipSetup()">Skip — add keys in Settings later</div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="topbar-left">
+    <div id="logo">✦</div>
+    <div id="app-name">My AI</div>
+    <div id="provider-badge">Ready</div>
+  </div>
+  <div id="topbar-right">
+    <button class="icon-btn" onclick="clearChat()" title="New chat">✏️</button>
+    <button class="icon-btn" onclick="saveLastToMemory()" title="Save to memory">💾</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- CHAT PANEL -->
+  <div class="panel active" id="panel-chat">
+    <div id="chat-messages">
+      <div id="welcome">
+        <div class="welcome-icon">✦</div>
+        <div class="welcome-title">My AI</div>
+        <div class="welcome-sub">Your personal AI — smart routing across Gemini, Groq & NVIDIA. Just talk naturally.</div>
+        <div class="chips">
+          <div class="chip" onclick="useChip(this)">📄 Study a PDF</div>
+          <div class="chip" onclick="useChip(this)">🔍 Research a topic</div>
+          <div class="chip" onclick="useChip(this)">💻 Write code</div>
+          <div class="chip" onclick="useChip(this)">🌐 Build an HTML page</div>
+          <div class="chip" onclick="useChip(this)">🤖 Automate a task</div>
+          <div class="chip" onclick="useChip(this)">📸 Write a photo caption</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="input-bar">
+      <div id="input-wrap">
+        <textarea id="msg-input" placeholder="Ask anything..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY PANEL -->
+  <div class="panel" id="panel-memory">
+    <div class="panel-header">
+      <div class="panel-title">Memory</div>
+      <div class="panel-actions">
+        <button class="small-btn" onclick="exportMemory()">Export</button>
+        <button class="small-btn" onclick="document.getElementById('import-file').click()">Import</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importMemory(event)">
+      </div>
+    </div>
+
+    <div class="memory-add">
+      <textarea id="mem-input" placeholder="Add something to remember... e.g. My Fiverr rate is ₹4000/video"></textarea>
+      <button class="add-btn" onclick="addMemoryManual()">Add</button>
+    </div>
+
+    <div id="memory-list"></div>
+    <div id="memory-empty" style="display:none">
+      <div style="font-size:32px">🧠</div>
+      <div>No memories yet</div>
+      <div style="font-size:11px;margin-top:4px">Say "remember" in chat or add manually above</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-content">
+
+      <div class="settings-section">
+        <div class="section-title">API Keys</div>
+
+        <div class="settings-row">
+          <div class="row-label">
+            <span class="dot" style="background:var(--gemini)"></span>
+            Google AI Studio
+            <span class="key-status unset" id="status-gemini">Not set</span>
+          </div>
+          <div class="row-desc">PDF, research, image tasks — Gemini 3.6 Flash (1,500 req/day free)</div>
+          <div class="key-row">
+            <input type="password" class="key-input" id="key-gemini" placeholder="AIza...">
+            <button class="save-btn" onclick="saveKey('gemini')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="row-label">
+            <span class="dot" style="background:var(--groq)"></span>
+            Groq
+            <span class="key-status unset" id="status-groq">Not set</span>
+          </div>
+          <div class="row-desc">Code & HTML tasks — Llama 3.3 70B, ultra fast (free tier)</div>
+          <div class="key-row">
+            <input type="password" class="key-input" id="key-groq" placeholder="gsk_...">
+            <button class="save-btn" onclick="saveKey('groq')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="row-label">
+            <span class="dot" style="background:var(--nvidia)"></span>
+            NVIDIA Build
+            <span class="key-status unset" id="status-nvidia">Not set</span>
+          </div>
+          <div class="row-desc">Fallback — Llama 3.1 405B (1,000 free credits)</div>
+          <div class="key-row">
+            <input type="password" class="key-input" id="key-nvidia" placeholder="nvapi-...">
+            <button class="save-btn" onclick="saveKey('nvidia')">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">Smart Routing</div>
+        <div class="route-row"><span class="route-icon">📄</span><span class="route-task">PDF / Research / Analysis</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+        <div class="route-row"><span class="route-icon">💻</span><span class="route-task">Code Generation</span><span class="route-model" style="color:var(--groq)">Groq Llama 3.3</span></div>
+        <div class="route-row"><span class="route-icon">🌐</span><span class="route-task">HTML / Frontend</span><span class="route-model" style="color:var(--groq)">Groq Llama 3.3</span></div>
+        <div class="route-row"><span class="route-icon">🤖</span><span class="route-task">Automation / Planning</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+        <div class="route-row"><span class="route-icon">💬</span><span class="route-task">General (default)</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+        <div class="route-row"><span class="route-icon">🔄</span><span class="route-task">Auto-fallback</span><span class="route-model" style="color:var(--nvidia)">NVIDIA Llama 405B</span></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">Memory</div>
+        <div class="settings-row">
+          <div class="row-desc">Memory is saved on this device only. Export to back it up.</div>
+          <div class="btn-group">
+            <button class="action-btn" onclick="exportMemory()">📤 Export</button>
+            <button class="action-btn" onclick="document.getElementById('import-file2').click()">📥 Import</button>
+            <button class="action-btn danger" onclick="clearMemory()">🗑️ Clear All</button>
+          </div>
+          <input type="file" id="import-file2" accept=".json" style="display:none" onchange="importMemory(event)">
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">About</div>
+        <div class="settings-row">
+          <div class="row-desc" style="line-height:2">
+            <strong style="color:var(--text)">My AI</strong> — Personal AI OS<br>
+            Smart routing · Auto-fallback · Memory<br>
+            Built for Sairaj · Zero subscription
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <button class="nav-btn active" id="nav-chat" onclick="switchPanel('chat')">
+    <span class="nav-icon">💬</span>Chat
+  </button>
+  <button class="nav-btn" id="nav-memory" onclick="switchPanel('memory')">
+    <span class="nav-icon">🧠</span>Memory
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="switchPanel('settings')">
+    <span class="nav-icon">⚙️</span>Settings
+  </button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let keys = { gemini: '', groq: '', nvidia: '' };
+let messages = [];
+let memories = [];
+let isLoading = false;
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function init() {
+  keys.gemini = localStorage.getItem('myai_gemini') || '';
+  keys.groq    = localStorage.getItem('myai_groq')   || '';
+  keys.nvidia  = localStorage.getItem('myai_nvidia') || '';
+
+  const saved = localStorage.getItem('myai_memories');
+  if (saved) try { memories = JSON.parse(saved); } catch(e) {}
+
+  updateStatuses();
+  renderMemories();
+
+  if (keys.gemini || keys.groq || keys.nvidia) {
+    document.getElementById('setup').style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+document.getElementById('setup-btn').onclick = () => {
+  const g  = document.getElementById('s-gemini').value.trim();
+  const gr = document.getElementById('s-groq').value.trim();
+  const n  = document.getElementById('s-nvidia').value.trim();
+
+  if (g)  { keys.gemini = g;  localStorage.setItem('myai_gemini', g); }
+  if (gr) { keys.groq   = gr; localStorage.setItem('myai_groq', gr); }
+  if (n)  { keys.nvidia = n;  localStorage.setItem('myai_nvidia', n); }
+
+  updateStatuses();
+  document.getElementById('setup').style.display = 'none';
+  toast('Keys saved. My AI is ready! ✦');
+};
+
+function skipSetup() {
+  document.getElementById('setup').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'memory') renderMemories();
+}
+
+// ══════════════════════════════════════════
+// ROUTING
+// ══════════════════════════════════════════
+function detectProvider(text) {
+  const t = text.toLowerCase();
+
+  if (t.match(/\b(code|program|function|script|python|javascript|java|c\+\+|bug|debug|error|algorithm|react|node|api)\b/))
+    return 'groq';
+
+  if (t.match(/\b(html|css|website|webpage|frontend|ui|design|landing page|build a page)\b/))
+    return 'groq';
+
+  if (t.match(/\b(pdf|document|read this|summarize|notes|study|exam|viva)\b/))
+    return 'gemini';
+
+  if (t.match(/\b(research|latest|news|find|analyze|analyse|what is|explain|search)\b/))
+    return 'gemini';
+
+  if (t.match(/\b(automat|workflow|plan|strategy|schedule|organize|empire|course|freelance)\b/))
+    return 'gemini';
+
+  if (t.match(/\b(image|photo|video|caption|reel|edit|agency|client)\b/))
+    return 'gemini';
+
+  return 'gemini';
+}
+
+function providerOrder(primary) {
+  const all = ['gemini', 'groq', 'nvidia'];
+  return [primary, ...all.filter(p => p !== primary)];
+}
+
+function providerLabel(p) {
+  return { gemini: 'Gemini 3.6 Flash', groq: 'Groq · Llama 3.3', nvidia: 'NVIDIA · Llama 405B' }[p] || p;
+}
+
+function providerColor(p) {
+  return { gemini: 'var(--gemini)', groq: 'var(--groq)', nvidia: 'var(--nvidia)' }[p] || 'var(--text2)';
+}
+
+// ══════════════════════════════════════════
+// API CALLS
+// ══════════════════════════════════════════
+async function callGemini(userMsg, history) {
+  if (!keys.gemini) throw new Error('No Gemini key');
+
+  const memCtx = buildMemCtx();
+  const contents = [];
+
+  if (memCtx) {
+    contents.push({ role: 'user', parts: [{ text: `System: You are My AI, a smart personal assistant for Sairaj. ${memCtx}` }] });
+    contents.push({ role: 'model', parts: [{ text: 'Understood. Ready to help.' }] });
+  } else {
+    contents.push({ role: 'user', parts: [{ text: 'System: You are My AI, a smart personal assistant. Be concise, helpful, and professional.' }] });
+    contents.push({ role: 'model', parts: [{ text: 'Understood. Ready to help.' }] });
+  }
+
+  history.forEach(m => {
+    contents.push({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    });
+  });
+
+  contents.push({ role: 'user', parts: [{ text: userMsg }] });
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keys.gemini}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+      })
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `Gemini error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Empty Gemini response');
+  return text;
+}
+
+async function callGroq(userMsg, history) {
+  if (!keys.groq) throw new Error('No Groq key');
+
+  const memCtx = buildMemCtx();
+  const sysMsg = `You are My AI, a smart personal assistant for Sairaj. Specialize in coding, HTML, and technical tasks. Be concise and direct.${memCtx ? '\n\nContext:\n' + memCtx : ''}`;
+
+  const msgs = [{ role: 'system', content: sysMsg }];
+  history.forEach(m => msgs.push({ role: m.role, content: m.content }));
+  msgs.push({ role: 'user', content: userMsg });
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${keys.groq}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: msgs,
+      max_tokens: 2048,
+      temperature: 0.7
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `Groq error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Empty Groq response');
+  return text;
+}
+
+async function callNvidia(userMsg, history) {
+  if (!keys.nvidia) throw new Error('No NVIDIA key');
+
+  const memCtx = buildMemCtx();
+  const sysMsg = `You are My AI, a smart personal assistant.${memCtx ? '\n\nContext:\n' + memCtx : ''}`;
+
+  const msgs = [{ role: 'system', content: sysMsg }];
+  history.forEach(m => msgs.push({ role: m.role, content: m.content }));
+  msgs.push({ role: 'user', content: userMsg });
+
+  const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${keys.nvidia}`
+    },
+    body: JSON.stringify({
+      model: 'meta/llama-3.1-405b-instruct',
+      messages: msgs,
+      max_tokens: 2048,
+      temperature: 0.7
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `NVIDIA error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Empty NVIDIA response');
+  return text;
+}
+
+async function callAI(userMsg) {
+  const primary = detectProvider(userMsg);
+  const order = providerOrder(primary);
+
+  for (const p of order) {
+    if (!keys[p]) continue;
+    try {
+      let response;
+      if (p === 'gemini') response = await callGemini(userMsg, messages);
+      else if (p === 'groq') response = await callGroq(userMsg, messages);
+      else if (p === 'nvidia') response = await callNvidia(userMsg, messages);
+      return { response, provider: p };
+    } catch (err) {
+      console.warn(`[${p}] failed:`, err.message);
+      const isExhausted = /quota|credit|429|rate|limit|exhausted/i.test(err.message);
+      if (isExhausted) {
+        toast(`${p} limit reached, switching...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw new Error('All providers unavailable. Check your API keys in Settings.');
+}
+
+// ══════════════════════════════════════════
+// SEND MESSAGE
+// ══════════════════════════════════════════
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  if (!keys.gemini && !keys.groq && !keys.nvidia) {
+    toast('Add an API key in Settings first');
+    switchPanel('settings');
+    return;
+  }
+
+  // Hide welcome
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
+
+  input.value = '';
+  autoResize(input);
+
+  // Memory command
+  if (/remember|save this|don't forget/i.test(text)) {
+    const mem = text.replace(/remember (that|this)?/i, '').replace(/save this:?/i, '').replace(/don't forget/i, '').trim();
+    if (mem.length > 4) {
+      addMsg('user', text);
+      messages.push({ role: 'user', content: text });
+      addMemory(mem);
+      addMsg('ai', `✅ Saved to memory: "${mem}"`, 'system');
+      messages.push({ role: 'assistant', content: `Saved to memory: "${mem}"` });
+      return;
+    }
+  }
+
+  addMsg('user', text);
+  messages.push({ role: 'user', content: text });
+
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  const typingId = showTyping();
+
+  try {
+    const { response, provider } = await callAI(text);
+    removeTyping(typingId);
+    addMsg('ai', response, provider);
+    messages.push({ role: 'assistant', content: response });
+
+    const badge = document.getElementById('provider-badge');
+    badge.textContent = providerLabel(provider);
+    badge.style.color = providerColor(provider);
+
+  } catch (err) {
+    removeTyping(typingId);
+    addMsg('error', '⚠️ ' + err.message);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function addMsg(role, content, provider = '') {
+  const area = document.getElementById('chat-messages');
+
+  const msg = document.createElement('div');
+  msg.className = `msg ${role === 'error' ? 'error ai' : role}`;
+
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = role === 'user' ? 'S' : '✦';
+
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+
+  if (role === 'ai' && provider && provider !== 'system') {
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = `<span class="meta-dot" style="background:${providerColor(provider)}"></span>${providerLabel(provider)}`;
+    body.appendChild(meta);
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = formatMsg(content);
+  body.appendChild(bubble);
+
+  msg.appendChild(av);
+  msg.appendChild(body);
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function formatMsg(text) {
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function showTyping() {
+  const area = document.getElementById('chat-messages');
+  const id = 'typing-' + Date.now();
+  const msg = document.createElement('div');
+  msg.className = 'msg ai';
+  msg.id = id;
+  msg.innerHTML = `<div class="avatar">✦</div><div class="msg-body"><div class="bubble"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ══════════════════════════════════════════
+// MEMORY
+// ══════════════════════════════════════════
+function buildMemCtx() {
+  if (!memories.length) return '';
+  return memories.slice(-8).map(m => `- ${m.text}`).join('\n');
+}
+
+function addMemory(text) {
+  const entry = { id: Date.now(), text: text.trim(), time: new Date().toLocaleDateString('en-IN') };
+  memories.unshift(entry);
+  localStorage.setItem('myai_memories', JSON.stringify(memories));
+  renderMemories();
+}
+
+function addMemoryManual() {
+  const inp = document.getElementById('mem-input');
+  const t = inp.value.trim();
+  if (!t) return;
+  addMemory(t);
+  inp.value = '';
+  toast('Memory saved');
+}
+
+function deleteMemory(id) {
+  memories = memories.filter(m => m.id !== id);
+  localStorage.setItem('myai_memories', JSON.stringify(memories));
+  renderMemories();
+}
+
+function clearMemory() {
+  if (!confirm('Clear all memories?')) return;
+  memories = [];
+  localStorage.setItem('myai_memories', JSON.stringify(memories));
+  renderMemories();
+  toast('Memory cleared');
+}
+
+function renderMemories() {
+  const list = document.getElementById('memory-list');
+  const empty = document.getElementById('memory-empty');
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  if (!memories.length) {
+    list.style.display = 'none';
+    empty.style.display = 'flex';
+    empty.style.flexDirection = 'column';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.style.display = 'flex';
+  list.style.flexDirection = 'column';
+
+  memories.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'mem-card';
+    card.innerHTML = `
+      <div class="mem-card-top">
+        <span class="mem-date">${m.time}</span>
+        <button class="mem-del" onclick="deleteMemory(${m.id})">✕</button>
+      </div>
+      <div class="mem-text">${m.text}</div>`;
+    list.appendChild(card);
+  });
+}
+
+function saveLastToMemory() {
+  if (!messages.length) { toast('No conversation yet'); return; }
+  const last = messages[messages.length - 1];
+  if (last.role === 'assistant') {
+    addMemory(last.content.substring(0, 200) + (last.content.length > 200 ? '...' : ''));
+    toast('Last response saved to memory');
+  } else {
+    toast('No AI response to save');
+  }
+}
+
+function exportMemory() {
+  const data = JSON.stringify({ version: 2, memories, exported: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `myai-memory-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Memory exported');
+}
+
+function importMemory(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.memories && Array.isArray(data.memories)) {
+        memories = data.memories;
+        localStorage.setItem('myai_memories', JSON.stringify(memories));
+        renderMemories();
+        toast(`Imported ${memories.length} memories`);
+      }
+    } catch { toast('Invalid file'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ══════════════════════════════════════════
+// KEYS
+// ══════════════════════════════════════════
+function saveKey(provider) {
+  const val = document.getElementById('key-' + provider).value.trim();
+  if (!val) { toast('Enter a key first'); return; }
+  keys[provider] = val;
+  localStorage.setItem('myai_' + provider, val);
+  document.getElementById('key-' + provider).value = '';
+  updateStatuses();
+  toast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} key saved ✓`);
+}
+
+function updateStatuses() {
+  ['gemini', 'groq', 'nvidia'].forEach(p => {
+    const el = document.getElementById('status-' + p);
+    if (!el) return;
+    if (keys[p]) {
+      el.textContent = 'Set ✓';
+      el.className = 'key-status set';
+    } else {
+      el.textContent = 'Not set';
+      el.className = 'key-status unset';
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function clearChat() {
+  messages = [];
+  const area = document.getElementById('chat-messages');
+  area.innerHTML = `
+    <div id="welcome">
+      <div class="welcome-icon">✦</div>
+      <div class="welcome-title">My AI</div>
+      <div class="welcome-sub">Your personal AI — smart routing across Gemini, Groq & NVIDIA. Just talk naturally.</div>
+      <div class="chips">
+        <div class="chip" onclick="useChip(this)">📄 Study a PDF</div>
+        <div class="chip" onclick="useChip(this)">🔍 Research a topic</div>
+        <div class="chip" onclick="useChip(this)">💻 Write code</div>
+        <div class="chip" onclick="useChip(this)">🌐 Build an HTML page</div>
+        <div class="chip" onclick="useChip(this)">🤖 Automate a task</div>
+        <div class="chip" onclick="useChip(this)">📸 Write a photo caption</div>
+      </div>
+    </div>`;
+  const badge = document.getElementById('provider-badge');
+  badge.textContent = 'Ready';
+  badge.style.color = '';
+}
+
+function useChip(el) {
+  const text = el.textContent.replace(/^[^\w]+/, '').trim();
+  const inp = document.getElementById('msg-input');
+  inp.value = text;
+  inp.focus();
+  autoResize(inp);
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+init();
+</script>
+</body>
+</html>
