@@ -788,10 +788,7 @@
       <input type="password" id="setup-nvidia" placeholder="nvapi-...">
     </div>
 
-    <div class="setup-field">
-      <label><span style="color:var(--groq)">●</span> Groq Key</label>
-      <input type="password" id="setup-groq" placeholder="gsk_...">
-    </div>
+
 
     <button id="setup-start">Start Using My AI →</button>
     <div class="setup-skip" onclick="skipSetup()">Skip for now, add keys in Settings</div>
@@ -880,7 +877,7 @@
             Google AI Studio
             <span class="key-status empty" id="status-gemini">Not set</span>
           </div>
-          <div class="settings-desc">Used for PDF, research, image, video, automation tasks</div>
+          <div class="settings-desc">Used for PDF, research, image, video, automation tasks (Gemini 2.5 Flash)</div>
           <div class="key-input-wrap">
             <input type="password" class="key-input" id="key-gemini" placeholder="AIza...">
             <button class="key-save-btn" onclick="saveKey('gemini')">Save</button>
@@ -900,18 +897,7 @@
           </div>
         </div>
 
-        <div class="settings-row">
-          <div class="settings-label">
-            <span class="provider-indicator" style="background:var(--groq)"></span>
-            Groq
-            <span class="key-status empty" id="status-groq">Not set</span>
-          </div>
-          <div class="settings-desc">Fallback for all tasks — ultra fast Llama models</div>
-          <div class="key-input-wrap">
-            <input type="password" class="key-input" id="key-groq" placeholder="gsk_...">
-            <button class="key-save-btn" onclick="saveKey('groq')">Save</button>
-          </div>
-        </div>
+
       </div>
 
       <!-- Routing Info -->
@@ -920,12 +906,12 @@
         <div class="route-item">
           <span style="font-size:14px">📄</span>
           <span class="route-task">PDF / Documents</span>
-          <span class="route-model" style="color:var(--gemini)">Gemini</span>
+          <span class="route-model" style="color:var(--gemini)">Gemini 2.5 Flash</span>
         </div>
         <div class="route-item">
           <span style="font-size:14px">🔍</span>
           <span class="route-task">Research / Analysis</span>
-          <span class="route-model" style="color:var(--gemini)">Gemini</span>
+          <span class="route-model" style="color:var(--gemini)">Gemini 2.5 Flash</span>
         </div>
         <div class="route-item">
           <span style="font-size:14px">💻</span>
@@ -945,7 +931,7 @@
         <div class="route-item">
           <span style="font-size:14px">💬</span>
           <span class="route-task">General Chat (default)</span>
-          <span class="route-model" style="color:var(--groq)">Groq</span>
+          <span class="route-model" style="color:var(--gemini)">Gemini</span>
         </div>
       </div>
 
@@ -1000,7 +986,7 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-let keys = { gemini: '', nvidia: '', groq: '' };
+let keys = { gemini: '', nvidia: '' };
 let messages = []; // { role, content, provider }
 let memories = []; // { id, text, time }
 let isLoading = false;
@@ -1013,7 +999,6 @@ function init() {
   // Load keys
   keys.gemini = localStorage.getItem('myai_gemini') || '';
   keys.nvidia = localStorage.getItem('myai_nvidia') || '';
-  keys.groq = localStorage.getItem('myai_groq') || '';
 
   // Load memories
   const saved = localStorage.getItem('myai_memories');
@@ -1024,7 +1009,7 @@ function init() {
   renderMemories();
 
   // Show/hide setup
-  const hasAnyKey = keys.gemini || keys.nvidia || keys.groq;
+  const hasAnyKey = keys.gemini || keys.nvidia;
   if (hasAnyKey) {
     document.getElementById('setup-overlay').style.display = 'none';
   }
@@ -1036,11 +1021,10 @@ function init() {
 document.getElementById('setup-start').addEventListener('click', () => {
   const g = document.getElementById('setup-gemini').value.trim();
   const n = document.getElementById('setup-nvidia').value.trim();
-  const gr = document.getElementById('setup-groq').value.trim();
+
 
   if (g) { keys.gemini = g; localStorage.setItem('myai_gemini', g); }
   if (n) { keys.nvidia = n; localStorage.setItem('myai_nvidia', n); }
-  if (gr) { keys.groq = gr; localStorage.setItem('myai_groq', gr); }
 
   updateKeyStatuses();
   document.getElementById('setup-overlay').style.display = 'none';
@@ -1093,17 +1077,17 @@ function detectProvider(text) {
   if (t.includes('image') || t.includes('photo') || t.includes('video') || t.includes('generate') || t.includes('create visual'))
     return 'gemini';
 
-  // Default: Groq (fastest, free)
-  return 'groq';
+  // Default: Gemini
+  return 'gemini';
 }
 
 function getProviderLabel(p) {
-  const labels = { gemini: 'Gemini 2.0 Flash', nvidia: 'Llama 3.1 405B', groq: 'Groq Llama' };
+  const labels = { gemini: 'Gemini 3.6 Flash', nvidia: 'Llama 3.1 405B' };
   return labels[p] || p;
 }
 
 function getProviderColor(p) {
-  const colors = { gemini: 'var(--gemini)', nvidia: 'var(--nvidia)', groq: 'var(--groq)' };
+  const colors = { gemini: 'var(--gemini)', nvidia: 'var(--nvidia)' };
   return colors[p] || 'var(--text2)';
 }
 
@@ -1132,7 +1116,7 @@ async function callGemini(userMsg, history) {
   contents.push({ role: 'user', parts: [{ text: userMsg }] });
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keys.gemini}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1182,38 +1166,7 @@ async function callNvidia(userMsg, history) {
   return data.choices?.[0]?.message?.content || 'No response';
 }
 
-async function callGroq(userMsg, history) {
-  if (!keys.groq) throw new Error('No Groq key set');
 
-  const memoryContext = buildMemoryContext();
-  const sysPrompt = `You are My AI, a helpful personal assistant.${memoryContext ? ' ' + memoryContext : ''}`;
-
-  const msgs = [{ role: 'system', content: sysPrompt }];
-  history.forEach(m => msgs.push({ role: m.role, content: m.content }));
-  msgs.push({ role: 'user', content: userMsg });
-
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${keys.groq}`
-    },
-    body: JSON.stringify({
-      model: 'llama3-70b-8192',
-      messages: msgs,
-      max_tokens: 2048,
-      temperature: 0.7
-    })
-  });
-
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'Groq error');
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || 'No response';
-}
 
 async function callAI(userMsg) {
   let provider = detectProvider(userMsg);
@@ -1225,7 +1178,6 @@ async function callAI(userMsg) {
       let response;
       if (p === 'gemini') response = await callGemini(userMsg, messages);
       else if (p === 'nvidia') response = await callNvidia(userMsg, messages);
-      else if (p === 'groq') response = await callGroq(userMsg, messages);
       currentProvider = p;
       return { response, provider: p };
     } catch (err) {
@@ -1242,7 +1194,7 @@ async function callAI(userMsg) {
 }
 
 function buildProviderOrder(primary) {
-  const all = ['gemini', 'nvidia', 'groq'];
+  const all = ['gemini', 'nvidia'];
   return [primary, ...all.filter(p => p !== primary)];
 }
 
@@ -1511,7 +1463,7 @@ function saveKey(provider) {
 }
 
 function updateKeyStatuses() {
-  ['gemini', 'nvidia', 'groq'].forEach(p => {
+  ['gemini', 'nvidia'].forEach(p => {
     const el = document.getElementById('status-' + p);
     if (!el) return;
     if (keys[p]) {
