@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --surface3: #222232;
+  --border: #1e1e2e;
+  --border2: #2a2a3e;
+  --text: #e2e2f0;
+  --text2: #7878a0;
+  --text3: #44445a;
+  --accent: #7c6cfc;
+  --accent2: #5b4de0;
+  --accent-glow: rgba(124,108,252,0.15);
+  --green: #22c55e;
+  --red: #ef4444;
+  --gemini: #4285f4;
+  --groq: #f55036;
+  --nvidia: #76b900;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* ── SETUP OVERLAY ── */
+#setup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+#setup-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.setup-logo {
+  text-align: center;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.setup-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.setup-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-top: -8px;
+}
+
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.setup-input {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.setup-input:focus { border-color: var(--accent); }
+.setup-input::placeholder { color: var(--text3); }
+
+#setup-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+
+#setup-btn:active { transform: scale(0.98); }
+#setup-btn:hover { background: var(--accent2); }
+
+.setup-skip {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.setup-skip:hover { color: var(--text2); }
+
+/* ── TOP BAR ── */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+#topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+#logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+#app-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+#provider-badge {
+  font-size: 10px;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+
+#topbar-right {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover { background: var(--border2); color: var(--text); }
+.icon-btn:active { transform: scale(0.93); }
+
+/* ── MAIN ── */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.panel.active { display: flex; }
+
+/* ── CHAT ── */
+#chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+
+#chat-messages::-webkit-scrollbar { width: 3px; }
+#chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Welcome */
+#welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.welcome-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.welcome-sub {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+/* Messages */
+.msg {
+  display: flex;
+  gap: 10px;
+  animation: msgIn 0.22s ease;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.msg.user .avatar {
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  color: white;
+}
+
+.msg.ai .avatar {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: 14px;
+}
+
+.msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: calc(100% - 44px);
+}
+
+.msg-meta {
+  font-size: 10px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: 2px;
+}
+
+.meta-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.msg.user .bubble {
+  background: var(--accent);
+  color: white;
+  border-radius: 14px 3px 14px 14px;
+}
+
+.msg.ai .bubble {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 3px 14px 14px 14px;
+}
+
+.msg.error .bubble {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #fca5a5;
+  border-radius: 14px;
+}
+
+.bubble pre {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 12px;
+  margin: 8px 0;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+.bubble code {
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.bubble strong { color: white; font-weight: 600; }
+
+/* Typing */
+.typing {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text3);
+  animation: typingBounce 1.3s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── INPUT ── */
+#input-bar {
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#input-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 9px 12px;
+  transition: border-color 0.2s;
+}
+
+#input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+#msg-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  max-height: 120px;
+  min-height: 22px;
+  line-height: 1.55;
+  padding: 2px 0;
+}
+
+#msg-input::placeholder { color: var(--text3); }
+
+#send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+#send-btn:hover { background: var(--accent2); }
+#send-btn:disabled { background: var(--surface3); box-shadow: none; cursor: not-allowed; }
+#send-btn:active:not(:disabled) { transform: scale(0.93); }
+
+/* ── MEMORY PANEL ── */
+#panel-memory {
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.small-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+
+.small-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.memory-add {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.memory-add textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  resize: none;
+  height: 58px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+
+.memory-add textarea:focus { border-color: var(--accent); }
+.memory-add textarea::placeholder { color: var(--text3); }
+
+.add-btn {
+  padding: 9px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-end;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+
+.add-btn:hover { background: var(--accent2); }
+
+#memory-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#memory-list::-webkit-scrollbar { width: 3px; }
+#memory-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.mem-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: msgIn 0.2s ease;
+}
+
+.mem-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mem-date { font-size: 10px; color: var(--text3); }
+
+.mem-del {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.mem-del:hover { color: var(--red); }
+
+.mem-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+#memory-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text3);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── SETTINGS PANEL ── */
+#panel-settings {
+  overflow-y: auto;
+}
+
+#panel-settings::-webkit-scrollbar { width: 3px; }
+#panel-settings::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.settings-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.section-title {
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.settings-row {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row:last-child { border-bottom: none; }
+
+.row-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.key-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.key-status.set { background: rgba(34,197,94,0.12); color: var(--green); }
+.key-status.unset { background: rgba(239,68,68,0.12); color: var(--red); }
+
+.row-desc {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.6;
+  margin-bottom: 9px;
+}
+
+.key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 0;
+}
+
+.key-input:focus { border-color: var(--accent); }
+.key-input::placeholder { color: var(--text3); font-size: 12px; }
+
+.save-btn {
+  padding: 9px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.save-btn:hover { background: var(--accent2); }
+
+.route-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.route-row:last-child { border-bottom: none; }
+
+.route-icon { font-size: 15px; flex-shrink: 0; }
+.route-task { color: var(--text2); flex: 1; }
+.route-model { font-weight: 600; font-size: 11px; }
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-btn.danger { color: var(--red); border-color: rgba(239,68,68,0.2); }
+.action-btn.danger:hover { background: rgba(239,68,68,0.08); border-color: var(--red); }
+
+/* ── BOTTOM NAV ── */
+#bottom-nav {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s;
+  letter-spacing: 0.2px;
+}
+
+.nav-btn.active { color: var(--accent); }
+.nav-btn:hover { color: var(--text2); }
+.nav-icon { font-size: 19px; line-height: 1; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.28s;
+  pointer-events: none;
+  z-index: 500;
+  white-space: nowrap;
+  max-width: 88vw;
+}
+
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+/* ── HISTORY / DRIVE EXTENSIONS ── */
+.history-search { padding:12px 16px 6px; flex-shrink:0; }
+.history-search input {
+  width:100%; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:10px; padding:10px 12px; color:var(--text); outline:none;
+  font:13px 'Inter',sans-serif;
+}
+.history-search input:focus { border-color:var(--accent); }
+.history-search input::placeholder { color:var(--text3); }
+.history-filters,.memory-category-tabs {
+  display:flex; gap:6px; overflow-x:auto; padding:6px 16px 10px; flex-shrink:0;
+}
+.history-filters::-webkit-scrollbar,.memory-category-tabs::-webkit-scrollbar { display:none; }
+.filter-btn {
+  border:1px solid var(--border2); background:var(--surface2); color:var(--text2);
+  padding:6px 10px; border-radius:16px; font:11px 'Inter',sans-serif; white-space:nowrap;
+}
+.filter-btn.active { background:var(--accent-glow); border-color:var(--accent); color:var(--accent); }
+#history-list {
+  flex:1; overflow-y:auto; padding:4px 16px 16px; display:flex; flex-direction:column; gap:9px;
+}
+.history-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:13px;
+  padding:12px 13px; cursor:pointer; transition:all .2s;
+}
+.history-card:hover { border-color:var(--border2); transform:translateY(-1px); }
+.history-card-top { display:flex; align-items:center; gap:8px; }
+.history-title { font-size:13px; font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.history-del { background:none;border:none;color:var(--text3);font-size:13px;padding:2px 4px;cursor:pointer; }
+.history-del:hover { color:var(--red); }
+.history-preview { font-size:11px; color:var(--text2); line-height:1.5; margin-top:5px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.history-meta { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:9px; font-size:9px; color:var(--text3); }
+.category-pill {
+  display:inline-flex; align-items:center; padding:3px 7px; border-radius:9px;
+  background:var(--surface2); border:1px solid var(--border2); color:var(--text2);
+  font-size:9px; white-space:nowrap;
+}
+.history-empty {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--text3); font-size:13px; text-align:center; padding:20px;
+}
+.memory-add { flex-direction:column; }
+.memory-add-controls { display:flex; gap:8px; }
+.category-select {
+  flex:1; background:var(--surface2); color:var(--text); border:1px solid var(--border2);
+  border-radius:9px; padding:9px 10px; font:12px 'Inter',sans-serif; outline:none;
+}
+.memory-add .add-btn { flex-shrink:0; }
+.drive-status-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.drive-pill {
+  display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px;
+  font-size:10px; margin-left:5px; font-weight:500;
+}
+.drive-pill.on { background:rgba(34,197,94,.12); color:var(--green); }
+.drive-pill.off { background:rgba(239,68,68,.12); color:var(--red); }
+.action-btn:disabled { opacity:.45; cursor:not-allowed; }
+@media (max-width:380px) {
+  #app-name { max-width:145px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .route-model { max-width:112px; text-align:right; }
+}
+</style>
+
+<body>
+  <!-- SETUP -->
+  <div id="setup">
+    <div id="setup-box">
+      <div class="setup-logo">✦</div>
+      <div class="setup-title">Welcome to My AI — Frame X</div>
+      <div class="setup-sub">Add your AI keys. They are stored only on this device. Google Drive sync is optional.</div>
+      <div class="setup-field">
+        <div class="setup-label"><span class="dot" style="background:var(--gemini)"></span>Google AI Studio Key</div>
+        <input type="password" class="setup-input" id="s-gemini" placeholder="AIza...">
+      </div>
+      <div class="setup-field">
+        <div class="setup-label"><span class="dot" style="background:var(--groq)"></span>Groq Key</div>
+        <input type="password" class="setup-input" id="s-groq" placeholder="gsk_...">
+      </div>
+      <div class="setup-field">
+        <div class="setup-label"><span class="dot" style="background:var(--nvidia)"></span>NVIDIA Build Key</div>
+        <input type="password" class="setup-input" id="s-nvidia" placeholder="nvapi-...">
+      </div>
+      <button id="setup-btn">Start My AI →</button>
+      <div class="setup-skip" onclick="skipSetup()">Skip — add keys in Settings later</div>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div id="topbar-left">
+      <div id="logo">✦</div>
+      <div id="app-name">My AI — Frame X</div>
+      <div id="provider-badge">Ready</div>
+    </div>
+    <div id="topbar-right">
+      <button class="icon-btn" onclick="clearChat()" title="New chat">✏️</button>
+      <button class="icon-btn" onclick="saveLastToMemory()" title="Save to memory">💾</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- CHAT -->
+    <div class="panel active" id="panel-chat">
+      <div id="chat-messages">
+        <div id="welcome">
+          <div class="welcome-icon">✦</div>
+          <div class="welcome-title">My AI — Frame X</div>
+          <div class="welcome-sub">Your personal AI with smart routing, persistent memory, chat history and optional Google Drive sync.</div>
+          <div class="chips">
+            <div class="chip" onclick="useChip(this)">📄 Study a PDF</div>
+            <div class="chip" onclick="useChip(this)">🔍 Research a topic</div>
+            <div class="chip" onclick="useChip(this)">💻 Write code</div>
+            <div class="chip" onclick="useChip(this)">🌐 Build an HTML page</div>
+            <div class="chip" onclick="useChip(this)">🤖 Automate a task</div>
+            <div class="chip" onclick="useChip(this)">📸 Write a photo caption</div>
+          </div>
+        </div>
+      </div>
+      <div id="input-bar">
+        <div id="input-wrap">
+          <textarea id="msg-input" placeholder="Ask anything..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button id="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="panel" id="panel-history">
+      <div class="panel-header">
+        <div class="panel-title">Chat History</div>
+        <div class="panel-actions">
+          <button class="small-btn" onclick="newChat()">＋ New</button>
+          <button class="small-btn" onclick="syncAllToDrive()">☁ Sync</button>
+        </div>
+      </div>
+      <div class="history-search">
+        <input id="history-search" type="search" placeholder="Search chats..." oninput="renderHistory()">
+      </div>
+      <div class="history-filters" id="history-filters">
+        <button class="filter-btn active" data-filter="All" onclick="setHistoryFilter('All')">All</button>
+        <button class="filter-btn" data-filter="Study" onclick="setHistoryFilter('Study')">Study</button>
+        <button class="filter-btn" data-filter="Research" onclick="setHistoryFilter('Research')">Research</button>
+        <button class="filter-btn" data-filter="Coding" onclick="setHistoryFilter('Coding')">Coding</button>
+        <button class="filter-btn" data-filter="Planning" onclick="setHistoryFilter('Planning')">Planning</button>
+        <button class="filter-btn" data-filter="Automation" onclick="setHistoryFilter('Automation')">Automation</button>
+        <button class="filter-btn" data-filter="Other" onclick="setHistoryFilter('Other')">Other</button>
+      </div>
+      <div id="history-list"></div>
+      <div id="history-empty" class="history-empty" style="display:none">
+        <div style="font-size:32px">🗂️</div>
+        <div>No saved chats yet</div>
+        <div style="font-size:11px;margin-top:4px">Your conversations will appear here automatically.</div>
+      </div>
+    </div>
+
+    <!-- MEMORY -->
+    <div class="panel" id="panel-memory">
+      <div class="panel-header">
+        <div class="panel-title">Memory</div>
+        <div class="panel-actions">
+          <button class="small-btn" onclick="exportMemory()">Export</button>
+          <button class="small-btn" onclick="document.getElementById('import-file').click()">Import</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importMemory(event)">
+        </div>
+      </div>
+      <div class="memory-add">
+        <textarea id="mem-input" placeholder="Add something to remember..."></textarea>
+        <div class="memory-add-controls">
+          <select id="mem-category" class="category-select">
+            <option>General</option><option>Study</option><option>Research</option><option>Coding</option>
+            <option>Planning</option><option>Automation</option><option>Other</option>
+          </select>
+          <button class="add-btn" onclick="addMemoryManual()">Add</button>
+        </div>
+      </div>
+      <div class="memory-category-tabs" id="memory-category-tabs">
+        <button class="filter-btn active" data-filter="All" onclick="setMemoryFilter('All')">All</button>
+        <button class="filter-btn" data-filter="General" onclick="setMemoryFilter('General')">General</button>
+        <button class="filter-btn" data-filter="Study" onclick="setMemoryFilter('Study')">Study</button>
+        <button class="filter-btn" data-filter="Research" onclick="setMemoryFilter('Research')">Research</button>
+        <button class="filter-btn" data-filter="Coding" onclick="setMemoryFilter('Coding')">Coding</button>
+        <button class="filter-btn" data-filter="Planning" onclick="setMemoryFilter('Planning')">Planning</button>
+        <button class="filter-btn" data-filter="Automation" onclick="setMemoryFilter('Automation')">Automation</button>
+        <button class="filter-btn" data-filter="Other" onclick="setMemoryFilter('Other')">Other</button>
+      </div>
+      <div id="memory-list"></div>
+      <div id="memory-empty" style="display:none">
+        <div style="font-size:32px">🧠</div>
+        <div>No memories yet</div>
+        <div style="font-size:11px;margin-top:4px">Say "remember this..." in chat or add a memory above.</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-content">
+        <div class="settings-section">
+          <div class="section-title">API Keys</div>
+          <div class="settings-row">
+            <div class="row-label"><span class="dot" style="background:var(--gemini)"></span>Google AI Studio<span class="key-status unset" id="status-gemini">Not set</span></div>
+            <div class="row-desc">Study, research, analysis and general tasks — Gemini 3.6 Flash.</div>
+            <div class="key-row"><input type="password" class="key-input" id="key-gemini" placeholder="AIza..."><button class="save-btn" onclick="saveKey('gemini')">Save</button></div>
+          </div>
+          <div class="settings-row">
+            <div class="row-label"><span class="dot" style="background:var(--groq)"></span>Groq<span class="key-status unset" id="status-groq">Not set</span></div>
+            <div class="row-desc">Code and HTML tasks — Llama 3.3 70B Versatile.</div>
+            <div class="key-row"><input type="password" class="key-input" id="key-groq" placeholder="gsk_..."><button class="save-btn" onclick="saveKey('groq')">Save</button></div>
+          </div>
+          <div class="settings-row">
+            <div class="row-label"><span class="dot" style="background:var(--nvidia)"></span>NVIDIA Build<span class="key-status unset" id="status-nvidia">Not set</span></div>
+            <div class="row-desc">Fallback — Meta Llama 3.1 405B Instruct.</div>
+            <div class="key-row"><input type="password" class="key-input" id="key-nvidia" placeholder="nvapi-..."><button class="save-btn" onclick="saveKey('nvidia')">Save</button></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">Google Drive Memory</div>
+          <div class="settings-row">
+            <div class="drive-status-row">
+              <div>
+                <div class="row-label" style="margin-bottom:3px">☁️ Drive Sync <span id="drive-status" class="drive-pill off">Not connected</span></div>
+                <div class="row-desc" style="margin-bottom:0">Syncs <b>memories.json</b>, <b>chats.json</b>, and organized chat copies to “My AI — Frame X”.</div>
+              </div>
+            </div>
+            <div class="btn-group" style="margin-top:10px">
+              <button class="action-btn" id="drive-connect-btn" onclick="connectDrive()">☁️ Connect Google Drive</button>
+              <button class="action-btn" id="drive-sync-btn" onclick="syncAllToDrive()" disabled>↻ Sync now</button>
+              <button class="action-btn danger" id="drive-disconnect-btn" onclick="disconnectDrive()" disabled>Disconnect</button>
+            </div>
+            <div class="row-desc" id="drive-detail" style="margin-top:9px;margin-bottom:0">Scope: drive.file · Client-side only · OAuth token is kept in memory.</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">Smart Routing</div>
+          <div class="route-row"><span class="route-icon">📄</span><span class="route-task">PDF / Study / Research</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+          <div class="route-row"><span class="route-icon">💻</span><span class="route-task">Code / HTML</span><span class="route-model" style="color:var(--groq)">Groq Llama 3.3 70B</span></div>
+          <div class="route-row"><span class="route-icon">🤖</span><span class="route-task">Automation / Planning</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+          <div class="route-row"><span class="route-icon">💬</span><span class="route-task">General</span><span class="route-model" style="color:var(--gemini)">Gemini 3.6 Flash</span></div>
+          <div class="route-row"><span class="route-icon">🔄</span><span class="route-task">Auto-fallback</span><span class="route-model" style="color:var(--nvidia)">NVIDIA Llama 3.1 405B</span></div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">Memory & Data</div>
+          <div class="settings-row">
+            <div class="row-desc">LocalStorage remains the fast local cache. Drive is the optional cloud backup/sync layer.</div>
+            <div class="btn-group">
+              <button class="action-btn" onclick="exportAllData()">📤 Export all</button>
+              <button class="action-btn" onclick="document.getElementById('import-all-file').click()">📥 Import all</button>
+              <button class="action-btn danger" onclick="clearAllLocalData()">🗑️ Clear local data</button>
+            </div>
+            <input type="file" id="import-all-file" accept=".json" style="display:none" onchange="importAllData(event)">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">About</div>
+          <div class="settings-row">
+            <div class="row-desc" style="line-height:2">
+              <strong style="color:var(--text)">My AI — Frame X</strong> — Personal AI OS<br>
+              Smart routing · Chat history · Folder memory · Google Drive sync<br>
+              Single HTML · GitHub Pages · No backend
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <button class="nav-btn active" id="nav-chat" onclick="switchPanel('chat')"><span class="nav-icon">💬</span>Chat</button>
+    <button class="nav-btn" id="nav-history" onclick="switchPanel('history')"><span class="nav-icon">🗂️</span>History</button>
+    <button class="nav-btn" id="nav-memory" onclick="switchPanel('memory')"><span class="nav-icon">🧠</span>Memory</button>
+    <button class="nav-btn" id="nav-settings" onclick="switchPanel('settings')"><span class="nav-icon">⚙️</span>Settings</button>
+  </div>
+  <div id="toast"></div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+  // ══════════════════════════════════════════════════════
+  // My AI — Frame X
+  // Single-file client-side assistant with LocalStorage + Drive
+  // ══════════════════════════════════════════════════════
+
+  const APP = {
+    name: 'My AI — Frame X',
+    driveScope: 'https://www.googleapis.com/auth/drive.file',
+    clientId: '236073548320-onn49ggpkfsng4kc67ppb491q2kvt83u.apps.googleusercontent.com',
+    rootFolder: 'My AI — Frame X',
+    categories: ['Study','Research','Coding','Planning','Automation','Other'],
+    memoryCategories: ['General','Study','Research','Coding','Planning','Automation','Other']
+  };
+
+  const MODELS = {
+    gemini: { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+    groq: { id: 'llama-3.3-70b-versatile', label: 'Groq · Llama 3.3 70B' },
+    nvidia: { id: 'meta/llama-3.1-405b-instruct', label: 'NVIDIA · Llama 3.1 405B' }
+  };
+
+  let keys = { gemini: '', groq: '', nvidia: '' };
+  let messages = [];
+  let memories = [];
+  let chats = [];
+  let currentChat = null;
+  let isLoading = false;
+  let historyFilter = 'All';
+  let memoryFilter = 'All';
+
+  // Drive state — access token intentionally kept only in memory.
+  let drive = {
+    token: null,
+    expiresAt: 0,
+    tokenClient: null,
+    rootId: null,
+    folders: {},
+    files: {}
+  };
+
+  // ──────────────────────────────────────────────
+  // INIT / LOCAL STORAGE
+  // ──────────────────────────────────────────────
+  function init() {
+    keys.gemini = localStorage.getItem('myai_gemini') || '';
+    keys.groq = localStorage.getItem('myai_groq') || '';
+    keys.nvidia = localStorage.getItem('myai_nvidia') || '';
+
+    try { memories = JSON.parse(localStorage.getItem('myai_memories') || '[]'); } catch { memories = []; }
+    try { chats = JSON.parse(localStorage.getItem('myai_chats') || '[]'); } catch { chats = []; }
+
+    normalizeData();
+    updateStatuses();
+    renderMemories();
+    renderHistory();
+    updateDriveUI();
+
+    if (keys.gemini || keys.groq || keys.nvidia) {
+      document.getElementById('setup').style.display = 'none';
+    }
+    setTimeout(initGoogleIdentity, 500);
+  }
+
+  function normalizeData() {
+    memories = Array.isArray(memories) ? memories.map(m => ({
+      id: m.id || Date.now() + Math.random(),
+      text: String(m.text || '').trim(),
+      time: m.time || new Date().toLocaleDateString('en-IN'),
+      category: APP.memoryCategories.includes(m.category) ? m.category : 'General'
+    })).filter(m => m.text) : [];
+
+    chats = Array.isArray(chats) ? chats.map(c => ({
+      id: c.id || Date.now() + Math.random(),
+      title: c.title || 'Untitled chat',
+      timestamp: c.timestamp || new Date().toISOString(),
+      category: APP.categories.includes(c.category) ? c.category : 'Other',
+      preview: c.preview || '',
+      messages: Array.isArray(c.messages) ? c.messages : []
+    })).filter(c => c.messages.length) : [];
+  }
+
+  function persistLocal() {
+    localStorage.setItem('myai_memories', JSON.stringify(memories));
+    localStorage.setItem('myai_chats', JSON.stringify(chats));
+  }
+
+  // ──────────────────────────────────────────────
+  // SETUP / KEYS
+  // ──────────────────────────────────────────────
+  document.getElementById('setup-btn').onclick = () => {
+    const g = document.getElementById('s-gemini').value.trim();
+    const gr = document.getElementById('s-groq').value.trim();
+    const n = document.getElementById('s-nvidia').value.trim();
+    if (g) { keys.gemini = g; localStorage.setItem('myai_gemini', g); }
+    if (gr) { keys.groq = gr; localStorage.setItem('myai_groq', gr); }
+    if (n) { keys.nvidia = n; localStorage.setItem('myai_nvidia', n); }
+    updateStatuses();
+    document.getElementById('setup').style.display = 'none';
+    toast('Keys saved. My AI is ready! ✦');
+  };
+
+  function skipSetup() {
+    document.getElementById('setup').style.display = 'none';
+  }
+
+  function saveKey(provider) {
+    const val = document.getElementById('key-' + provider).value.trim();
+    if (!val) { toast('Enter a key first'); return; }
+    keys[provider] = val;
+    localStorage.setItem('myai_' + provider, val);
+    document.getElementById('key-' + provider).value = '';
+    updateStatuses();
+    toast(providerLabel(provider) + ' key saved ✓');
+  }
+
+  function updateStatuses() {
+    ['gemini','groq','nvidia'].forEach(p => {
+      const el = document.getElementById('status-' + p);
+      if (!el) return;
+      el.textContent = keys[p] ? 'Set ✓' : 'Not set';
+      el.className = 'key-status ' + (keys[p] ? 'set' : 'unset');
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // NAVIGATION
+  // ──────────────────────────────────────────────
+  function switchPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('panel-' + name);
+    const nav = document.getElementById('nav-' + name);
+    if (panel) panel.classList.add('active');
+    if (nav) nav.classList.add('active');
+    if (name === 'memory') renderMemories();
+    if (name === 'history') renderHistory();
+  }
+
+  // ──────────────────────────────────────────────
+  // ROUTING
+  // ──────────────────────────────────────────────
+  function detectProvider(text) {
+    const t = text.toLowerCase();
+
+    if (/\b(code|program|function|script|python|javascript|java|c\+\+|bug|debug|error|algorithm|react|node|api|json|regex)\b/.test(t)) return 'groq';
+    if (/\b(html|css|website|webpage|frontend|ui|landing page|build a page)\b/.test(t)) return 'groq';
+    if (/\b(pdf|document|read this|summarize|summary|notes|study|exam|viva|research|latest|news|find|analyze|analyse|what is|explain|search)\b/.test(t)) return 'gemini';
+    if (/\b(automat|workflow|plan|strategy|schedule|organize|course|freelance)\b/.test(t)) return 'gemini';
+    return 'gemini';
+  }
+
+  function providerOrder(primary) {
+    // Requested routing first; fallback order is always Gemini → Groq → NVIDIA,
+    // while preserving the selected primary at position 1.
+    const all = ['gemini','groq','nvidia'];
+    return [primary, ...all.filter(p => p !== primary)];
+  }
+
+  function providerLabel(p) { return MODELS[p]?.label || p; }
+  function providerColor(p) {
+    return { gemini:'var(--gemini)', groq:'var(--groq)', nvidia:'var(--nvidia)' }[p] || 'var(--text2)';
+  }
+
+  function detectCategory(text) {
+    const t = text.toLowerCase();
+    if (/\b(pdf|study|exam|notes|lecture|college|assignment|learn|syllabus|revision)\b/.test(t)) return 'Study';
+    if (/\b(research|latest|news|market|competitor|analysis|analyze|analyse|compare)\b/.test(t)) return 'Research';
+    if (/\b(code|coding|program|python|javascript|html|css|api|bug|debug|github|function|script)\b/.test(t)) return 'Coding';
+    if (/\b(plan|planning|strategy|goal|roadmap|schedule|organize|business|freelance)\b/.test(t)) return 'Planning';
+    if (/\b(automat|workflow|n8n|zapier|make\.com|trigger|agent)\b/.test(t)) return 'Automation';
+    return 'Other';
+  }
+
+  // ──────────────────────────────────────────────
+  // MEMORY CONTEXT
+  // ──────────────────────────────────────────────
+  function buildMemCtx() {
+    if (!memories.length) return '';
+    const grouped = {};
+    memories.slice(0, 60).forEach(m => {
+      const c = m.category || 'General';
+      (grouped[c] ||= []).push(m.text);
+    });
+    return Object.entries(grouped).map(([cat, items]) =>
+      `[${cat}]\n` + items.slice(0, 12).map(x => '- ' + x).join('\n')
+    ).join('\n');
+  }
+
+  // ──────────────────────────────────────────────
+  // API CALLS
+  // ──────────────────────────────────────────────
+  async function callGemini(userMsg, history) {
+    if (!keys.gemini) throw new Error('No Gemini key');
+    const memCtx = buildMemCtx();
+    const contents = [];
+
+    contents.push({
+      role:'user',
+      parts:[{text:
+        'System: You are My AI — Frame X, a smart personal assistant for Sairaj. ' +
+        'Be concise, helpful, professional, and use the memory context when relevant.' +
+        (memCtx ? '\n\nMEMORY CONTEXT:\n' + memCtx : '')
+      }]
+    });
+
+    history.slice(-30).forEach(m => contents.push({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    }));
+    contents.push({ role:'user', parts:[{text:userMsg}] });
+
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + MODELS.gemini.id + ':generateContent?key=' + encodeURIComponent(keys.gemini),
+      {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contents,
+          generationConfig:{ maxOutputTokens:2048 }
+        })
+      }
+    );
+
+    if (!res.ok) {
+      let err = {};
+      try { err = await res.json(); } catch {}
+      throw new Error(err.error?.message || `Gemini error ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    if (!text.trim()) throw new Error('Empty Gemini response');
+    return text.trim();
+  }
+
+  async function callGroq(userMsg, history) {
+    if (!keys.groq) throw new Error('No Groq key');
+    const memCtx = buildMemCtx();
+    const sysMsg = 'You are My AI — Frame X, a smart personal assistant for Sairaj. ' +
+      'Specialize in coding, HTML, technical tasks and precise implementation. Be concise and direct.' +
+      (memCtx ? '\n\nMEMORY CONTEXT:\n' + memCtx : '');
+
+    const msgs = [{role:'system',content:sysMsg}];
+    history.slice(-30).forEach(m => msgs.push({role:m.role,content:m.content}));
+    msgs.push({role:'user',content:userMsg});
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer ' + keys.groq},
+      body:JSON.stringify({
+        model:MODELS.groq.id,
+        messages:msgs,
+        max_completion_tokens:2048,
+        temperature:0.7
+      })
+    });
+
+    if (!res.ok) {
+      let err = {};
+      try { err = await res.json(); } catch {}
+      throw new Error(err.error?.message || `Groq error ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    if (!text.trim()) throw new Error('Empty Groq response');
+    return text.trim();
+  }
+
+  async function callNvidia(userMsg, history) {
+    if (!keys.nvidia) throw new Error('No NVIDIA key');
+    const memCtx = buildMemCtx();
+    const msgs = [{
+      role:'system',
+      content:'You are My AI — Frame X, a smart personal assistant for Sairaj.' +
+        (memCtx ? '\n\nMEMORY CONTEXT:\n' + memCtx : '')
+    }];
+    history.slice(-30).forEach(m => msgs.push({role:m.role,content:m.content}));
+    msgs.push({role:'user',content:userMsg});
+
+    const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer ' + keys.nvidia},
+      body:JSON.stringify({
+        model:MODELS.nvidia.id,
+        messages:msgs,
+        max_tokens:2048,
+        temperature:0.7,
+        top_p:0.9,
+        stream:false
+      })
+    });
+
+    if (!res.ok) {
+      let err = {};
+      try { err = await res.json(); } catch {}
+      throw new Error(err.error?.message || `NVIDIA error ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    if (!text.trim()) throw new Error('Empty NVIDIA response');
+    return text.trim();
+  }
+
+  async function callAI(userMsg) {
+    const primary = detectProvider(userMsg);
+    const order = providerOrder(primary);
+    let lastError = null;
+
+    for (const p of order) {
+      if (!keys[p]) continue;
+      try {
+        let response;
+        if (p === 'gemini') response = await callGemini(userMsg, messages);
+        else if (p === 'groq') response = await callGroq(userMsg, messages);
+        else response = await callNvidia(userMsg, messages);
+        return {response, provider:p};
+      } catch (err) {
+        lastError = err;
+        console.warn(`[${p}] failed:`, err.message);
+        const retryable = /quota|credit|429|rate|limit|exhausted|temporarily|unavailable|timeout|5\d\d/i.test(err.message);
+        if (retryable || p !== 'nvidia') {
+          toast(`${providerLabel(p)} unavailable — trying fallback`);
+          continue;
+        }
+      }
+    }
+    throw lastError || new Error('All providers unavailable. Check your API keys in Settings.');
+  }
+
+  // ──────────────────────────────────────────────
+  // CHAT SEND / SAVE
+  // ──────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text || isLoading) return;
+
+    if (!keys.gemini && !keys.groq && !keys.nvidia) {
+      toast('Add an API key in Settings first');
+      switchPanel('settings');
+      return;
+    }
+
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.style.display = 'none';
+    input.value = '';
+    autoResize(input);
+
+    if (/^(remember|save this|don't forget)\b/i.test(text)) {
+      const mem = text.replace(/^(remember|save this|don't forget)\s*(that|this)?\s*:?\s*/i,'').trim();
+      if (mem.length > 4) {
+        addMsg('user', text);
+        messages.push({role:'user',content:text});
+        addMemory(mem, detectCategory(mem) === 'Other' ? 'General' : detectCategory(mem));
+        const reply = `✅ Saved to memory: "${mem}"`;
+        addMsg('ai', reply, 'system');
+        messages.push({role:'assistant',content:reply});
+        ensureCurrentChat(text);
+        await saveCurrentChat();
+        return;
+      }
+    }
+
+    addMsg('user', text);
+    messages.push({role:'user',content:text});
+    ensureCurrentChat(text);
+
+    isLoading = true;
+    document.getElementById('send-btn').disabled = true;
+    const typingId = showTyping();
+
+    try {
+      const {response,provider} = await callAI(text);
+      removeTyping(typingId);
+      addMsg('ai',response,provider);
+      messages.push({role:'assistant',content:response});
+      const badge = document.getElementById('provider-badge');
+      badge.textContent = providerLabel(provider);
+      badge.style.color = providerColor(provider);
+      updateCurrentChatFromMessages();
+      await saveCurrentChat();
+    } catch (err) {
+      removeTyping(typingId);
+      addMsg('error','⚠️ ' + err.message);
+      updateCurrentChatFromMessages();
+      await saveCurrentChat();
+    } finally {
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+    }
+  }
+
+  function ensureCurrentChat(firstText) {
+    if (currentChat) return;
+    const title = makeTitle(firstText);
+    currentChat = {
+      id: Date.now(),
+      title,
+      timestamp: new Date().toISOString(),
+      category: detectCategory(firstText),
+      preview: firstText.substring(0,140),
+      messages:[]
+    };
+    chats.unshift(currentChat);
+    persistLocal();
+    renderHistory();
+  }
+
+  function updateCurrentChatFromMessages() {
+    if (!currentChat) return;
+    currentChat.messages = messages.map(m => ({role:m.role,content:m.content}));
+    const firstUser = messages.find(m => m.role === 'user');
+    if (firstUser) {
+      currentChat.category = detectCategory(firstUser.content);
+      currentChat.title = currentChat.title || makeTitle(firstUser.content);
+      currentChat.preview = firstUser.content.substring(0,140);
+    }
+    currentChat.timestamp = new Date().toISOString();
+    const idx = chats.findIndex(c => c.id === currentChat.id);
+    if (idx >= 0) chats[idx] = currentChat;
+    persistLocal();
+    renderHistory();
+  }
+
+  function makeTitle(text) {
+    const clean = text.replace(/\s+/g,' ').trim();
+    return clean.length > 48 ? clean.slice(0,48).trim() + '…' : clean || 'New chat';
+  }
+
+  async function saveCurrentChat() {
+    updateCurrentChatFromMessages();
+    // Local save is immediate. Drive sync is attempted only when connected.
+    if (drive.token && drive.expiresAt > Date.now() + 5000) {
+      try { await syncChatToDrive(currentChat); }
+      catch (e) { console.warn('Drive chat sync failed:', e); updateDriveUI('Sync pending'); }
+    }
+  }
+
+  function newChat() {
+    clearChat();
+    switchPanel('chat');
+  }
+
+  async function loadChat(id) {
+    const c = chats.find(x => String(x.id) === String(id));
+    if (!c) return;
+    currentChat = c;
+    messages = Array.isArray(c.messages) ? c.messages.map(m => ({role:m.role,content:m.content})) : [];
+
+    if (!messages.length && drive.token) {
+      try {
+        await ensureDriveStructure();
+        const filename = `chat_${c.id}.json`;
+        const matches = await driveList(filename, drive.folders.allChats);
+        if (matches[0]?.id) {
+          const remote = await downloadDriveJson(matches[0].id);
+          if (Array.isArray(remote.messages)) {
+            c.messages = remote.messages;
+            c.title = remote.title || c.title;
+            c.timestamp = remote.timestamp || c.timestamp;
+            c.category = remote.category || c.category;
+            c.preview = remote.preview || c.preview;
+            messages = remote.messages.map(m => ({role:m.role,content:m.content}));
+            persistLocal();
+            renderHistory();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load full chat from Drive', e);
+      }
+    }
+
+    renderChatMessages();
+    switchPanel('chat');
+    toast('Opened: ' + c.title);
+  }
+
+  function renderChatMessages() {
+    const area = document.getElementById('chat-messages');
+    area.innerHTML = '';
+    if (!messages.length) {
+      area.innerHTML = welcomeHTML();
+      return;
+    }
+    messages.forEach(m => addMsg(m.role === 'assistant' ? 'ai' : m.role, m.content, ''));
+  }
+
+  function welcomeHTML() {
+    return `<div id="welcome">
+      <div class="welcome-icon">✦</div>
+      <div class="welcome-title">My AI — Frame X</div>
+      <div class="welcome-sub">Your personal AI with smart routing, persistent memory, chat history and optional Google Drive sync.</div>
+      <div class="chips">
+        <div class="chip" onclick="useChip(this)">📄 Study a PDF</div>
+        <div class="chip" onclick="useChip(this)">🔍 Research a topic</div>
+        <div class="chip" onclick="useChip(this)">💻 Write code</div>
+        <div class="chip" onclick="useChip(this)">🌐 Build an HTML page</div>
+        <div class="chip" onclick="useChip(this)">🤖 Automate a task</div>
+        <div class="chip" onclick="useChip(this)">📸 Write a photo caption</div>
+      </div>
+    </div>`;
+  }
+
+  // ──────────────────────────────────────────────
+  // CHAT RENDER
+  // ──────────────────────────────────────────────
+  function addMsg(role, content, provider='') {
+    const area = document.getElementById('chat-messages');
+    const msg = document.createElement('div');
+    msg.className = `msg ${role === 'error' ? 'error ai' : role}`;
+
+    const av = document.createElement('div');
+    av.className = 'avatar';
+    av.textContent = role === 'user' ? 'S' : '✦';
+
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+
+    if (role === 'ai' && provider && provider !== 'system') {
+      const meta = document.createElement('div');
+      meta.className = 'msg-meta';
+      meta.innerHTML = `<span class="meta-dot" style="background:${providerColor(provider)}"></span>${escapeHtml(providerLabel(provider))}`;
+      body.appendChild(meta);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = formatMsg(content);
+    body.appendChild(bubble);
+    msg.appendChild(av);
+    msg.appendChild(body);
+    area.appendChild(msg);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function formatMsg(text) {
+    let s = escapeHtml(String(text));
+    s = s.replace(/```(\w+)?\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    s = s.replace(/\n/g,'<br>');
+    return s;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function showTyping() {
+    const area = document.getElementById('chat-messages');
+    const id = 'typing-' + Date.now();
+    const msg = document.createElement('div');
+    msg.className = 'msg ai';
+    msg.id = id;
+    msg.innerHTML = `<div class="avatar">✦</div><div class="msg-body"><div class="bubble"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+    area.appendChild(msg);
+    area.scrollTop = area.scrollHeight;
+    return id;
+  }
+
+  function removeTyping(id) {
+    document.getElementById(id)?.remove();
+  }
+
+  // ──────────────────────────────────────────────
+  // HISTORY
+  // ──────────────────────────────────────────────
+  function setHistoryFilter(filter) {
+    historyFilter = filter;
+    document.querySelectorAll('#history-filters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    const empty = document.getElementById('history-empty');
+    if (!list) return;
+    const q = (document.getElementById('history-search')?.value || '').toLowerCase().trim();
+
+    const filtered = chats.filter(c => {
+      const catOk = historyFilter === 'All' || c.category === historyFilter;
+      const searchText = [c.title,c.preview,c.category,...(c.messages||[]).map(m=>m.content)].join(' ').toLowerCase();
+      return catOk && (!q || searchText.includes(q));
+    });
+
+    list.innerHTML = '';
+    if (!filtered.length) {
+      list.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+    empty.style.display = 'none';
+    list.style.display = 'flex';
+
+    filtered.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      card.onclick = () => loadChat(c.id);
+      card.innerHTML = `
+        <div class="history-card-top">
+          <div class="history-title">${escapeHtml(c.title)}</div>
+          <button class="history-del" title="Delete chat" onclick="event.stopPropagation();deleteChat(${JSON.stringify(c.id)})">✕</button>
+        </div>
+        <div class="history-preview">${escapeHtml(c.preview || 'No preview')}</div>
+        <div class="history-meta"><span class="category-pill">${escapeHtml(c.category)}</span><span>${formatDate(c.timestamp)}</span></div>`;
+      list.appendChild(card);
+    });
+  }
+
+  function deleteChat(id) {
+    if (!confirm('Delete this chat from local history?')) return;
+    chats = chats.filter(c => String(c.id) !== String(id));
+    if (currentChat && String(currentChat.id) === String(id)) {
+      currentChat = null;
+      messages = [];
+      renderChatMessages();
+    }
+    persistLocal();
+    renderHistory();
+    if (drive.token) syncAllToDrive();
+    toast('Chat deleted');
+  }
+
+  // ──────────────────────────────────────────────
+  // MEMORY
+  // ──────────────────────────────────────────────
+  function addMemory(text, category='General') {
+    const entry = {
+      id: Date.now() + Math.random(),
+      text: text.trim(),
+      time: new Date().toLocaleDateString('en-IN'),
+      category: APP.memoryCategories.includes(category) ? category : 'General'
+    };
+    memories.unshift(entry);
+    persistLocal();
+    renderMemories();
+    if (drive.token) syncMemoriesToDrive().catch(console.warn);
+    return entry;
+  }
+
+  function addMemoryManual() {
+    const inp = document.getElementById('mem-input');
+    const t = inp.value.trim();
+    if (!t) return;
+    addMemory(t, document.getElementById('mem-category').value);
+    inp.value = '';
+    toast('Memory saved');
+  }
+
+  function setMemoryFilter(filter) {
+    memoryFilter = filter;
+    document.querySelectorAll('#memory-category-tabs .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+    renderMemories();
+  }
+
+  function deleteMemory(id) {
+    memories = memories.filter(m => String(m.id) !== String(id));
+    persistLocal();
+    renderMemories();
+    if (drive.token) syncMemoriesToDrive().catch(console.warn);
+  }
+
+  function clearMemory() {
+    if (!confirm('Clear all memories?')) return;
+    memories = [];
+    persistLocal();
+    renderMemories();
+    if (drive.token) syncMemoriesToDrive().catch(console.warn);
+    toast('Memory cleared');
+  }
+
+  function renderMemories() {
+    const list = document.getElementById('memory-list');
+    const empty = document.getElementById('memory-empty');
+    if (!list) return;
+
+    const filtered = memories.filter(m => memoryFilter === 'All' || (m.category || 'General') === memoryFilter);
+    list.innerHTML = '';
+    if (!filtered.length) {
+      list.style.display = 'none';
+      empty.style.display = 'flex';
+      empty.style.flexDirection = 'column';
+      return;
+    }
+
+    empty.style.display = 'none';
+    list.style.display = 'flex';
+    list.style.flexDirection = 'column';
+
+    filtered.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'mem-card';
+      card.innerHTML = `
+        <div class="mem-card-top">
+          <span class="category-pill">${escapeHtml(m.category || 'General')}</span>
+          <div style="display:flex;align-items:center;gap:7px"><span class="mem-date">${escapeHtml(m.time)}</span><button class="mem-del" onclick="deleteMemory(${JSON.stringify(m.id)})">✕</button></div>
+        </div>
+        <div class="mem-text">${escapeHtml(m.text)}</div>`;
+      list.appendChild(card);
+    });
+  }
+
+  function saveLastToMemory() {
+    if (!messages.length) { toast('No conversation yet'); return; }
+    const last = messages[messages.length - 1];
+    if (last.role === 'assistant') {
+      addMemory(last.content.substring(0,200) + (last.content.length > 200 ? '...' : ''), currentChat?.category || 'General');
+      toast('Last response saved to memory');
+    } else {
+      toast('No AI response to save');
+    }
+  }
+
+  function exportMemory() {
+    downloadJson({version:3,memories,exported:new Date().toISOString()}, `myai-memory-${Date.now()}.json`);
+    toast('Memory exported');
+  }
+
+  function importMemory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data.memories)) throw new Error();
+        memories = data.memories;
+        normalizeData();
+        persistLocal();
+        renderMemories();
+        if (drive.token) syncMemoriesToDrive().catch(console.warn);
+        toast(`Imported ${memories.length} memories`);
+      } catch { toast('Invalid memory file'); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // ──────────────────────────────────────────────
+  // GOOGLE DRIVE OAUTH
+  // ──────────────────────────────────────────────
+  function initGoogleIdentity() {
+    if (!window.google?.accounts?.oauth2) return;
+    try {
+      drive.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: APP.clientId,
+        scope: APP.driveScope,
+        callback: async (resp) => {
+          if (resp.error) {
+            console.error('Google OAuth error', resp);
+            toast('Google Drive authorization failed');
+            return;
+          }
+          drive.token = resp.access_token;
+          drive.expiresAt = Date.now() + ((resp.expires_in || 3600) * 1000);
+          try {
+            await ensureDriveStructure();
+            await loadFromDrive();
+            updateDriveUI('Connected');
+            toast('Google Drive connected ✓');
+          } catch (e) {
+            console.error(e);
+            updateDriveUI('Connection error');
+            toast('Drive connected, but setup failed');
+          }
+        }
+      });
+    } catch (e) {
+      console.error('GIS init failed',e);
+    }
+  }
+
+  async function connectDrive() {
+    if (!drive.tokenClient) {
+      initGoogleIdentity();
+      await waitForGoogleIdentity();
+    }
+    if (!drive.tokenClient) {
+      toast('Google sign-in is still loading. Try again.');
+      return;
+    }
+    drive.tokenClient.requestAccessToken({prompt: drive.token ? '' : 'consent'});
+  }
+
+  function waitForGoogleIdentity(timeout=5000) {
+    return new Promise(resolve => {
+      const start = Date.now();
+      const timer = setInterval(() => {
+        if (drive.tokenClient || Date.now() - start > timeout) {
+          clearInterval(timer); resolve();
+        }
+      }, 100);
+    });
+  }
+
+  function disconnectDrive() {
+    if (drive.token) {
+      try { google.accounts.oauth2.revoke(drive.token, () => {}); } catch {}
+    }
+    drive.token = null;
+    drive.expiresAt = 0;
+    drive.rootId = null;
+    drive.folders = {};
+    drive.files = {};
+    updateDriveUI('Not connected');
+    toast('Google Drive disconnected');
+  }
+
+  function updateDriveUI(detail) {
+    const pill = document.getElementById('drive-status');
+    const connect = document.getElementById('drive-connect-btn');
+    const sync = document.getElementById('drive-sync-btn');
+    const disconnect = document.getElementById('drive-disconnect-btn');
+    const text = document.getElementById('drive-detail');
+    if (!pill) return;
+
+    const connected = !!drive.token && drive.expiresAt > Date.now();
+    pill.textContent = connected ? (detail || 'Connected') : (detail || 'Not connected');
+    pill.className = 'drive-pill ' + (connected ? 'on' : 'off');
+    connect.disabled = connected;
+    sync.disabled = !connected;
+    disconnect.disabled = !connected;
+    if (connected) text.textContent = 'Folder: My AI — Frame X · Scope: drive.file · Auto-sync enabled';
+  }
+
+  async function driveFetch(url, options={}) {
+    if (!drive.token || drive.expiresAt <= Date.now()) throw new Error('Drive not connected');
+    const headers = new Headers(options.headers || {});
+    headers.set('Authorization','Bearer ' + drive.token);
+    if (options.body && !headers.has('Content-Type')) headers.set('Content-Type','application/json');
+    const res = await fetch(url,{...options,headers});
+    if (res.status === 401) {
+      drive.token = null;
+      updateDriveUI('Session expired');
+    }
+    if (!res.ok) {
+      let msg = `Drive error ${res.status}`;
+      try { const j=await res.json(); msg=j.error?.message || msg; } catch {}
+      throw new Error(msg);
+    }
+    return res;
+  }
+
+  async function driveList(name, parentId, mimeType=null) {
+    let q = `trashed=false and '${parentId}' in parents and name='${escapeDriveQuery(name)}'`;
+    if (mimeType) q += ` and mimeType='${mimeType}'`;
+    const url = 'https://www.googleapis.com/drive/v3/files?spaces=drive&fields=files(id,name,mimeType,modifiedTime,parents)&q=' + encodeURIComponent(q);
+    const res = await driveFetch(url);
+    return (await res.json()).files || [];
+  }
+
+  function escapeDriveQuery(s) {
+    return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  }
+
+  async function createDriveFolder(name, parentId) {
+    const res = await driveFetch('https://www.googleapis.com/drive/v3/files',{
+      method:'POST',
+      body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',parents:[parentId]})
+    });
+    return res.json();
+  }
+
+  async function ensureFolder(name, parentId, cacheKey) {
+    if (cacheKey && drive.folders[cacheKey]) return drive.folders[cacheKey];
+    const existing = await driveList(name,parentId,'application/vnd.google-apps.folder');
+    const id = existing[0]?.id || (await createDriveFolder(name,parentId)).id;
+    if (cacheKey) drive.folders[cacheKey] = id;
+    return id;
+  }
+
+  async function ensureDriveStructure() {
+    const rootExisting = await driveList(APP.rootFolder,'root','application/vnd.google-apps.folder');
+    drive.rootId = rootExisting[0]?.id || (await createDriveFolder(APP.rootFolder,'root')).id;
+
+    drive.folders.allChats = await ensureFolder('All Chats',drive.rootId,'allChats');
+    drive.folders.projects = await ensureFolder('projects',drive.rootId,'projects');
+
+    for (const cat of APP.categories) {
+      drive.folders[cat] = await ensureFolder(cat,drive.rootId,cat);
+    }
+
+    const memoriesFile = await driveList('memories.json',drive.rootId);
+    const chatsFile = await driveList('chats.json',drive.rootId);
+    if (memoriesFile[0]) drive.files.memories = memoriesFile[0].id;
+    if (chatsFile[0]) drive.files.chats = chatsFile[0].id;
+  }
+
+  async function uploadJsonFile(name, content, parentId, existingId=null) {
+    const blob = new Blob([JSON.stringify(content,null,2)],{type:'application/json'});
+
+    if (existingId) {
+      const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files/' + encodeURIComponent(existingId) + '?uploadType=media',{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body:blob
+      });
+      return res.json();
+    }
+
+    const metaRes = await driveFetch('https://www.googleapis.com/drive/v3/files',{
+      method:'POST',
+      body:JSON.stringify({name,mimeType:'application/json',parents:[parentId]})
+    });
+    const meta = await metaRes.json();
+
+    const uploadRes = await driveFetch('https://www.googleapis.com/upload/drive/v3/files/' + encodeURIComponent(meta.id) + '?uploadType=media',{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:blob
+    });
+    return uploadRes.json();
+  }
+
+  async function downloadDriveJson(fileId) {
+    const res = await driveFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fileId) + '?alt=media');
+    return res.json();
+  }
+
+  async function syncMemoriesToDrive() {
+    if (!drive.token) return;
+    await ensureDriveStructure();
+    const data = {version:3,updated:new Date().toISOString(),memories};
+    const existing = drive.files.memories;
+    const result = await uploadJsonFile('memories.json',data,drive.rootId,existing);
+    drive.files.memories = result.id || existing;
+  }
+
+  async function syncChatsIndexToDrive() {
+    if (!drive.token) return;
+    await ensureDriveStructure();
+    const data = {version:3,updated:new Date().toISOString(),chats:chats.map(c=>({
+      id:c.id,title:c.title,timestamp:c.timestamp,category:c.category,preview:c.preview
+    }))};
+    const result = await uploadJsonFile('chats.json',data,drive.rootId,drive.files.chats);
+    drive.files.chats = result.id || drive.files.chats;
+  }
+
+  async function syncChatToDrive(chat) {
+    if (!drive.token || !chat) return;
+    await ensureDriveStructure();
+
+    const payload = {
+      version:3,
+      id:chat.id,
+      title:chat.title,
+      timestamp:chat.timestamp,
+      category:chat.category,
+      preview:chat.preview,
+      messages:chat.messages || []
+    };
+    const filename = `chat_${chat.id}.json`;
+
+    // All Chats copy
+    const allMatches = await driveList(filename,drive.folders.allChats);
+    const allId = allMatches[0]?.id || null;
+    await uploadJsonFile(filename,payload,drive.folders.allChats,allId);
+
+    // Category copy
+    const catFolder = drive.folders[chat.category] || drive.folders.Other;
+    const catMatches = await driveList(filename,catFolder);
+    const catId = catMatches[0]?.id || null;
+    await uploadJsonFile(filename,payload,catFolder,catId);
+
+    await syncChatsIndexToDrive();
+    updateDriveUI('Synced');
+  }
+
+  async function loadFromDrive() {
+    await ensureDriveStructure();
+
+    if (drive.files.memories) {
+      try {
+        const data = await downloadDriveJson(drive.files.memories);
+        if (Array.isArray(data.memories)) memories = data.memories;
+      } catch(e) { console.warn('Could not load memories.json',e); }
+    }
+
+    if (drive.files.chats) {
+      try {
+        const data = await downloadDriveJson(drive.files.chats);
+        if (Array.isArray(data.chats)) {
+          // The index intentionally contains metadata only. Full messages are kept locally
+          // and loaded from per-chat files when available.
+          for (const meta of data.chats) {
+            const local = chats.find(c => String(c.id) === String(meta.id));
+            if (!local) chats.push({...meta,messages:[]});
+            else Object.assign(local,meta);
+          }
+        }
+      } catch(e) { console.warn('Could not load chats.json',e); }
+    }
+
+    persistLocal();
+    renderMemories();
+    renderHistory();
+  }
+
+  async function syncAllToDrive() {
+    if (!drive.token) {
+      toast('Connect Google Drive in Settings first');
+      switchPanel('settings');
+      return;
+    }
+    try {
+      updateDriveUI('Syncing…');
+      await ensureDriveStructure();
+      await syncMemoriesToDrive();
+      await syncChatsIndexToDrive();
+      for (const chat of chats.slice(0,100)) await syncChatToDrive(chat);
+      updateDriveUI('Synced');
+      toast('Drive sync complete ✓');
+    } catch(e) {
+      console.error(e);
+      updateDriveUI('Sync failed');
+      toast('Drive sync failed: ' + e.message);
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // DATA EXPORT / IMPORT
+  // ──────────────────────────────────────────────
+  function exportAllData() {
+    downloadJson({
+      version:3,
+      exported:new Date().toISOString(),
+      memories,
+      chats
+    },`myai-frame-x-backup-${Date.now()}.json`);
+    toast('Full backup exported');
+  }
+
+  function importAllData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data.memories) || !Array.isArray(data.chats)) throw new Error();
+        memories = data.memories;
+        chats = data.chats;
+        normalizeData();
+        persistLocal();
+        renderMemories();
+        renderHistory();
+        toast('Full backup imported');
+        if (drive.token) syncAllToDrive();
+      } catch { toast('Invalid full backup'); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function clearAllLocalData() {
+    if (!confirm('Clear local API keys, memories and chat history? Google Drive data will not be deleted.')) return;
+    ['myai_gemini','myai_groq','myai_nvidia','myai_memories','myai_chats'].forEach(k => localStorage.removeItem(k));
+    keys = {gemini:'',groq:'',nvidia:''};
+    memories = [];
+    chats = [];
+    currentChat = null;
+    messages = [];
+    updateStatuses();
+    renderMemories();
+    renderHistory();
+    renderChatMessages();
+    toast('Local data cleared');
+  }
+
+  function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  // ──────────────────────────────────────────────
+  // UTILS
+  // ──────────────────────────────────────────────
+  function clearChat() {
+    messages = [];
+    currentChat = null;
+    document.getElementById('chat-messages').innerHTML = welcomeHTML();
+    const badge = document.getElementById('provider-badge');
+    badge.textContent = 'Ready';
+    badge.style.color = '';
+    document.getElementById('msg-input').value = '';
+    autoResize(document.getElementById('msg-input'));
+    switchPanel('chat');
+  }
+
+  function useChip(el) {
+    const text = el.textContent.replace(/^[^\w]+/,'').trim();
+    const inp = document.getElementById('msg-input');
+    inp.value = text;
+    inp.focus();
+    autoResize(inp);
+  }
+
+  function autoResize(el) {
+    el.style.height='auto';
+    el.style.height=Math.min(el.scrollHeight,120)+'px';
+  }
+
+  function handleKey(e) {
+    if (e.key==='Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    } catch { return iso || ''; }
+  }
+
+  function toast(msg) {
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+  }
+
+  init();
+  </script>
+</body>
+</html>
